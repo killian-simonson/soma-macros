@@ -2,7 +2,7 @@ macro "Add ROI + Next Slice [q]" {
 
     // Fraction of image considered "edge" on each side.
     // e.g. 0.20 = middle 60% is acceptable.
-    MARGIN = 0.20;
+    MARGIN = 0.10;
 
     currentSlice = getSliceNumber();
 
