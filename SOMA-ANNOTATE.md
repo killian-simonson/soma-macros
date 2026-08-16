@@ -26,19 +26,19 @@ Copy `SomaMacros.fiji.ijm` to `FIJI/macros/toolsets`. Then in FIJI, everytime up
 * Rename selected ROIs: `R`
 * Load ZIP to ROIs: `P`
 * Generate mask: `G`
-* Check if soma is in existing ROI: `C`
+* Condense Z Stacks: `C`
 
 ## Workflow
 
 ### Log ROIs
 
-1. Open the .TIF in FIJI.
+1. Open the .TIF in FIJI, and press `C` to generate a condensed version of the image and locate the somas.
 
-2. For one soma, step through z-stacks and use the `Freeform selections` tool to capture each outline, adding and advancing quickly using `Q`.
+2. For one soma within the middle 80% of the volume (or whatever limit is being used), step through z-stacks and use the `Freeform selections` tool to capture each outline, adding and advancing quickly using `Q`.
 
 3. After capturing each slice of the soma, press `W`. This executes the macro and renames the soma to the correct integer. If corrections are needed, you can always select the ROIs, press `R`, and enter the correct names.
 
-4. Repeat Steps 2 and 3 for each soma. Remember to press `E` often to save. Use `C` to check that each soma is annotated.
+4. Repeat Steps 2 and 3 for each soma. Remember to press `E` often to save. Use the "Show All" checkbox in the ROI Manager to confirm that each soma has been annotated.
 
 ### Fill ROIs
 
@@ -54,9 +54,9 @@ Use `E` to save and `P` to load. Note: loading clears all existing ROIs.
 
 Around the time of writing this, no mouse, I'm averaging:
 
-* 10s / soma-slice ROI
-* Assuming an average depth of 20 z-slices per soma => a bit over 3m / soma
-* Assuming an average of 20 somas per image => 1hr / image
+* 5s / soma-slice ROI
+* Assuming an average depth of 15 z-slices per soma => ~75s / soma
+* Assuming an average of 10 somas per image => ~20m / image
 
 
 
