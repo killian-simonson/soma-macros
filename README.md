@@ -1,5 +1,5 @@
 # soma-macros
-FIJI .IJM extension for streamlining the soma annotation process. Uses ImajeJ 1.54p.
+FIJI .IJM extension for streamlining the soma annotation process. Uses ImageJ 1.54p.
 
 ## Using the Macros
 
