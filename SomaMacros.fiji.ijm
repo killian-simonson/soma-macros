@@ -72,10 +72,10 @@ macro "Add ROI + Next Slice [q]" {
 
     axes = "";
 
-    if (x <= leftLimit || (x + w) >= rightLimit)
+    if ((x + w) <= leftLimit || x >= rightLimit)
         axes = "X";
 
-    if (y <= topLimit || (y + h) >= bottomLimit) {
+    if ((y + h) <= topLimit || y >= bottomLimit) {
         if (axes != "")
             axes += ", ";
         axes += "Y";
@@ -260,32 +260,6 @@ macro "Generate Mask from ROIs [g]"{
     saveAs("Tiff", directory + maskTitle);
 }
 
-macro "Check Soma Annotation [c]" {
-    getSelectionCoordinates(x, y);
-
-    if (x.length == 0) {
-        showMessage("No Point", "Click a soma with the Point Tool first.");
-        exit();
-    }
-
-    px = x[0];
-    py = y[0];
-
-    n = roiManager("count");
-    found = 0;
-
-    for (i = 0; i < n; i++) {
-        roiManager("select", i);
-
-        if (selectionContains(px, py)) {
-            found = 1;
-            roiName = RoiManager.getName(i);
-            break;
-        }
-    }
-
-    if (found)
-        showMessage("Already Annotated", "Soma is in ROI: " + roiName);
-    else
-        showMessage("Not Annotated", "No existing ROI contains this point.");
+macro "Condense Z Stacks [c]" {
+    run("Z Project...", "projection=[Max Intensity]");
 }
