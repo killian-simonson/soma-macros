@@ -205,59 +205,77 @@ macro "Rename Selected ROIs [r]" {
     }
 }
 
-macro "Generate Mask from ROIs [g]"{
-    PREFIX = ""
+macro "Generate Mask from ROIs [g]" {
+
+    PREFIX = "";
 
     originalTitle = getTitle();
     directory = getDirectory("image");
 
+    // Remove extension
     baseName = originalTitle;
     if (endsWith(baseName, ".tif"))
         baseName = substring(baseName, 0, lengthOf(baseName) - 4);
     if (endsWith(baseName, ".tiff"))
         baseName = substring(baseName, 0, lengthOf(baseName) - 5);
 
-    maskTitle = baseName + "_mask.tif";
+    maskTitle = baseName + "_mask";
 
-    run("Select None");
+    // Get dimensions of original stack
+    getDimensions(width, height, channels, slices, frames);
 
-    // Duplicate the image
-    run("Duplicate...", "title=" + maskTitle);
+    // Create blank 8-bit stack with same XY and Z dimensions
+    run("New...", 
+        "name=" + maskTitle +
+        " type=8-bit" +
+        " width=" + width +
+        " height=" + height +
+        " slices=" + slices);
 
-    // Make the entire duplicate black
-    setForegroundColor(0, 0, 0);
-    run("Select All");
-    run("Fill");
-    run("Select None");
+    // New image is already black (pixel value 0)
 
-    for (label = 1; ; label++) {
+    // Process every ROI
+    n = roiManager("count");
 
-        n = roiManager("count");
-        found = 0;
+    for (i = 0; i < n; i++) {
 
-        // Check every ROI in the ROI Manager
-        for (i = 0; i < n; i++) {
+        name = RoiManager.getName(i);
 
-            name = RoiManager.getName(i);
+        if (matches(name, "[0-9]+")) {
 
-            if (name == PREFIX + label) {
-                found++;
+            label = parseInt(name);
 
-                // Select this ROI regardless of what was initially selected
-                roiManager("select", i);
+            roiManager("select", i);
 
-                setForegroundColor(label, label, label);
-                roiManager("measure");
-                run("Fill", "slice");
-            }
+            // Get the ROI's Z position
+            Roi.getPosition(c, z, t);
+
+            if (z == 0)
+                z = 1;
+
+            // Go to that Z slice in the mask
+            setSlice(z);
+
+            // Set pixel value corresponding to ROI label
+            setForegroundColor(label, label, label);
+
+            // IMPORTANT: fill only this slice
+            run("Fill", "slice");
         }
-
-        // Stop when no ROI has this name
-        if (found == 0)
-            break;
     }
 
-    saveAs("Tiff", directory + maskTitle);
+    // Save mask
+    saveAs("Tiff", directory + maskTitle + ".tif");
+
+    showMessage(
+        "Mask Generated",
+        "Created:\n" +
+        maskTitle + ".tif\n\n" +
+        "Dimensions: " +
+        width + " × " +
+        height + " × " +
+        slices
+    );
 }
 
 macro "Condense Z Stacks [c]" {
