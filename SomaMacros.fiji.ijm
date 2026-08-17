@@ -72,10 +72,10 @@ macro "Add ROI + Next Slice [q]" {
 
     axes = "";
 
-    if ((x + w) <= leftLimit || x >= rightLimit)
+    if (x <= leftLimit || (x + w) >= rightLimit)
         axes = "X";
 
-    if ((y + h) <= topLimit || y >= bottomLimit) {
+    if (y <= topLimit || (y + h) >= bottomLimit) {
         if (axes != "")
             axes += ", ";
         axes += "Y";
