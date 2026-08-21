@@ -1,9 +1,6 @@
+var MARGIN = 0.10
+
 macro "Add ROI + Next Slice [q]" {
-
-    // Fraction of image considered "edge" on each side.
-    // e.g. 0.20 = middle 60% is acceptable.
-    MARGIN = 0.10;
-
     currentSlice = getSliceNumber();
 
     // Add the new selection temporarily
@@ -164,8 +161,20 @@ macro "Save ROIs [e]" {
     showMessage("ROIs Saved", filename + "_ROIs.zip");
 }
 
+macro "Rename Selected ROIs [r]" {
+    name = getString("Enter new ROI name:", "1");
+    indexes = split(call("ij.plugin.frame.RoiManager.getIndexesAsString"));
+
+    for (i = 0; i < indexes.length; i++) {
+        roiManager("select", parseInt(indexes[i]));
+        roiManager("rename", name);
+    }
+}
+
 macro "Load ROIs [p]" {
     if (!getBoolean("Are you sure? This will overwrite existing ROIs.")) exit();
+
+    originalSlice = getSliceNumber();
 
     dir = getDirectory("image");
     filename = getTitle();
@@ -193,16 +202,45 @@ macro "Load ROIs [p]" {
             roiManager("Rename", originalName);
         }
     }
+
+    roiManager("Show All");
+    setSlice(originalSlice);
 }
 
-macro "Rename Selected ROIs [r]" {
-    name = getString("Enter new ROI name:", "1");
-    indexes = split(call("ij.plugin.frame.RoiManager.getIndexesAsString"));
+macro "Delete Soma [d]" {
 
-    for (i = 0; i < indexes.length; i++) {
-        roiManager("select", parseInt(indexes[i]));
-        roiManager("rename", name);
+    label = getNumber("Enter soma number to delete:", 1);
+
+    n = roiManager("count");
+
+    // Delete every ROI belonging to the selected soma
+    for (i = n - 1; i >= 0; i--) {
+
+        name = RoiManager.getName(i);
+
+        if (name == "" + label) {
+            roiManager("select", i);
+            roiManager("delete");
+        }
     }
+
+    // Rename all higher-numbered somas down by 1
+    n = roiManager("count");
+
+    for (i = 0; i < n; i++) {
+
+        name = RoiManager.getName(i);
+        roiLabel = parseInt(name);
+
+        if (roiLabel > label) {
+            newName = "" + (roiLabel - 1);
+
+            roiManager("select", i);
+            roiManager("Rename", newName);
+        }
+    }
+
+    roiManager("Show All");
 }
 
 macro "Generate Mask from ROIs [g]" {
@@ -280,4 +318,47 @@ macro "Generate Mask from ROIs [g]" {
 
 macro "Condense Z Stacks [c]" {
     run("Z Project...", "projection=[Max Intensity]");
+}
+
+macro "Toggle Middle 80% Boundary [b]" {
+    if (nImages == 0)
+        exit("No image open.");
+
+    // Remember current Z-slice
+    originalSlice = getSliceNumber();
+
+    getDimensions(width, height, channels, slices, frames);
+
+    left   = width * MARGIN;
+    top    = height * MARGIN;
+    right  = width * (1 - MARGIN);
+    bottom = height * (1 - MARGIN);
+
+    // Toggle off if boundary is already displayed
+    if (Overlay.size > 0) {
+        Overlay.remove;
+        setSlice(originalSlice);
+        run("Select None");
+        exit();
+    }
+
+    // Add boundary to every Z-slice
+    for (z = 1; z <= slices; z++) {
+
+        makeRectangle(
+            left,
+            top,
+            right - left,
+            bottom - top
+        );
+
+        setSlice(z);
+
+        run("Add Selection...");
+    }
+
+    // Return to the slice we started on
+    setSlice(originalSlice);
+
+    run("Select None");
 }
